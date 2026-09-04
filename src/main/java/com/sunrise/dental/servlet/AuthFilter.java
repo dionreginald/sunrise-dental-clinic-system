@@ -10,20 +10,7 @@ import jakarta.servlet.http.HttpSession;
 
 import java.io.IOException;
 
-/**
- * Server-side enforcement for use case "User Authentication (Login)".
- *
- * Before this filter existed, the login screen was only a client-side
- * (JavaScript) gate: hiding the login form did not stop someone from
- * calling /api/appointments, /api/bill, etc. directly (e.g. with curl or
- * browser dev tools) without ever logging in. This filter closes that gap
- * by checking for a valid session on every /api/* request except the
- * login endpoint itself.
- *
- * LoginServlet is responsible for creating the session (with the
- * "loggedIn" attribute) on a successful login; this filter just checks
- * that it's there.
- */
+
 @WebFilter("/api/*")
 public class AuthFilter extends HttpFilter {
 
