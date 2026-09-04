@@ -5,7 +5,7 @@ public class Bill {
     // Fixed charges — change these two constants if your brief specifies
     // different figures; every bill calculation reads from here.
     private static final double HOSPITAL_CHARGE = 500.00;
-    private static final double TAX_PERCENTAGE = 8.0;
+    private static final double TAX_PERCENTAGE = 18.0;
 
     private String billId;
     private Appointment appointment;

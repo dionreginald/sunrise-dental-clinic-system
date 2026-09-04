@@ -1,13 +1,6 @@
--- Sunrise Dental Clinic Appointment System
--- Starter schema based on the fields listed in the assessment brief.
--- Feel free to extend this (e.g. add a 'status' column to appointment
--- for cancellations, or a 'staff' table for real login credentials).
-
 CREATE DATABASE IF NOT EXISTS dental_clinic;
 USE dental_clinic;
 
--- Drop in reverse dependency order (child tables first) so this script
--- can be re-run safely to reset the database to match the current schema.
 DROP TABLE IF EXISTS bill;
 DROP TABLE IF EXISTS appointment;
 DROP TABLE IF EXISTS patient;
