@@ -22,11 +22,6 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-/**
- * Tests AppointmentManager's orchestration logic in isolation from the
- * database, by mocking the four DAOs it depends on. Uses the
- * dependency-injection constructor added specifically for testing.
- */
 @ExtendWith(MockitoExtension.class)
 class AppointmentManagerTest {
 
@@ -111,10 +106,40 @@ class AppointmentManagerTest {
         verify(appointmentDAO, times(1)).cancel("APT-0001");
     }
 
-    // ---------- generateBill() ----------
+    // ---------- calculateBill() / saveBill() ----------
 
     @Test
-    void generateBillLooksUpTreatmentCostAndSaves() throws SQLException {
+    void calculateBillLooksUpTreatmentCostAndDoesNotSave() throws SQLException {
+        Appointment appointment = new Appointment();
+        appointment.setApptNumber("APT-0001");
+        appointment.setTreatment("Scaling");
+        when(appointmentDAO.findByApptNumber("APT-0001")).thenReturn(appointment);
+
+        TreatmentType scaling = new TreatmentType();
+        scaling.setName("Scaling");
+        scaling.setPrice(2500.00);
+        when(treatmentTypeDAO.findByName("Scaling")).thenReturn(scaling);
+
+        Bill bill = manager.calculateBill("APT-0001", 1000.00);
+
+        assertEquals(2500.00, bill.getTreatmentCost());
+        assertEquals(1000.00, bill.getConsultFee());
+        assertTrue(bill.getTotalAmount() > 0, "calculateTotal() should have been applied");
+        verifyNoInteractions(billDAO);
+    }
+
+    @Test
+    void calculateBillThrowsWhenAppointmentNotFound() throws SQLException {
+        when(appointmentDAO.findByApptNumber("APT-DOES-NOT-EXIST")).thenReturn(null);
+
+        assertThrows(IllegalArgumentException.class,
+                () -> manager.calculateBill("APT-DOES-NOT-EXIST", 1000.00));
+
+        verifyNoInteractions(billDAO);
+    }
+
+    @Test
+    void saveBillPersistsTheCalculatedBill() throws SQLException {
         Appointment appointment = new Appointment();
         appointment.setApptNumber("APT-0001");
         appointment.setTreatment("Scaling");
@@ -127,21 +152,10 @@ class AppointmentManagerTest {
 
         when(billDAO.save(any(Bill.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        Bill bill = manager.generateBill("APT-0001", 1000.00);
+        Bill bill = manager.saveBill("APT-0001", 1000.00);
 
         assertEquals(2500.00, bill.getTreatmentCost());
-        assertEquals(1000.00, bill.getConsultFee());
-        assertTrue(bill.getTotalAmount() > 0, "calculateTotal() should have been applied before saving");
+        assertTrue(bill.getTotalAmount() > 0);
         verify(billDAO, times(1)).save(any(Bill.class));
-    }
-
-    @Test
-    void generateBillThrowsWhenAppointmentNotFound() throws SQLException {
-        when(appointmentDAO.findByApptNumber("APT-DOES-NOT-EXIST")).thenReturn(null);
-
-        assertThrows(IllegalArgumentException.class,
-                () -> manager.generateBill("APT-DOES-NOT-EXIST", 1000.00));
-
-        verifyNoInteractions(billDAO);
     }
 }

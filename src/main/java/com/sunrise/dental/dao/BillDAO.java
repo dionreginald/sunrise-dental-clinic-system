@@ -4,11 +4,15 @@ import com.sunrise.dental.db.DBConnection;
 import com.sunrise.dental.model.Appointment;
 import com.sunrise.dental.model.Bill;
 
+import com.sunrise.dental.model.Patient;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 
 public class BillDAO {
 
@@ -80,6 +84,54 @@ public class BillDAO {
                 return bill;
             }
         }
+    }
+
+    /**
+     * Returns every recorded bill, most recent (highest bill_id) first.
+     * Joins in patient name, appointment date/time and treatment so the
+     * bill history list has enough context to display without a second
+     * round trip per row.
+     */
+    public List<Bill> findAll() throws SQLException {
+        String sql = "SELECT b.bill_id, b.appt_number, b.consult_fee, b.treatment_cost, "
+                + "b.hospital_charge, b.tax_percentage, b.total_amount, "
+                + "a.treatment, a.appt_date, a.appt_time, p.name AS patient_name "
+                + "FROM bill b "
+                + "JOIN appointment a ON a.appt_number = b.appt_number "
+                + "JOIN patient p ON p.contact = a.patient_contact "
+                + "ORDER BY b.bill_id DESC";
+
+        List<Bill> bills = new ArrayList<>();
+
+        try (Connection conn = DBConnection.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+                Bill bill = new Bill();
+                bill.setBillId(rs.getString("bill_id"));
+                bill.setConsultFee(rs.getDouble("consult_fee"));
+                bill.setTreatmentCost(rs.getDouble("treatment_cost"));
+                bill.setHospitalCharge(rs.getDouble("hospital_charge"));
+                bill.setTaxPercentage(rs.getDouble("tax_percentage"));
+                bill.setTotalAmount(rs.getDouble("total_amount"));
+
+                Appointment appt = new Appointment();
+                appt.setApptNumber(rs.getString("appt_number"));
+                appt.setTreatment(rs.getString("treatment"));
+                appt.setApptDate(rs.getDate("appt_date").toLocalDate());
+                appt.setApptTime(rs.getTime("appt_time").toLocalTime());
+
+                Patient patient = new Patient();
+                patient.setName(rs.getString("patient_name"));
+                appt.setPatient(patient);
+
+                bill.setAppointment(appt);
+                bills.add(bill);
+            }
+        }
+
+        return bills;
     }
 
     /**

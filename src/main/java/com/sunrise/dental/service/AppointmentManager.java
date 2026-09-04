@@ -121,12 +121,12 @@ public class AppointmentManager {
     }
 
     /**
-     * Orchestrates use case "Calculate and Print Bill":
+     * Orchestrates use case "Calculate Bill" (preview only — nothing is
+     * written to the database):
      *  1. searchAppointment(apptNumber) (reuse, matches your <<include>>)
      *  2. build a Bill from it and calculate the total
-     *  3. save the bill
-     *  4. return it (call bill.printBill() on the result if you want
-     *     console output, or use its getters to render on a webpage)
+     *  3. return it, unsaved, so the UI can show a preview before the
+     *     user commits to recording it
      * consultFee is passed in since it's set by staff on the day (it can
      * vary by dentist/visit) rather than being fixed data — the caller
      * (servlet) takes it from the billing form. The treatment cost, by
@@ -134,7 +134,7 @@ public class AppointmentManager {
      * total actually reflects which treatment was booked, per the brief's
      * "based on treatment type and consultation fee" requirement.
      */
-    public Bill generateBill(String apptNumber, double consultFee) throws SQLException {
+    public Bill calculateBill(String apptNumber, double consultFee) throws SQLException {
         Appointment appointment = searchAppointment(apptNumber);
         if (appointment == null) {
             throw new IllegalArgumentException("No appointment found with number " + apptNumber);
@@ -145,8 +145,21 @@ public class AppointmentManager {
 
         Bill bill = new Bill(appointment, consultFee, treatmentCost);
         bill.calculateTotal();
-        billDAO.save(bill);
 
+        return bill;
+    }
+
+    /**
+     * Orchestrates use case "Save Bill": re-runs calculateBill() from
+     * scratch (rather than trusting numbers a client might send back) and
+     * persists the freshly-computed result via BillDAO. Kept separate from
+     * calculateBill() so "preview a bill" and "record a bill" are two
+     * distinct, explicit actions instead of one action that always writes
+     * to the database.
+     */
+    public Bill saveBill(String apptNumber, double consultFee) throws SQLException {
+        Bill bill = calculateBill(apptNumber, consultFee);
+        billDAO.save(bill);
         return bill;
     }
 }
