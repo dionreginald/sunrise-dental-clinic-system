@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Sunrise Dental Clinic</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header>
+  <h1>Sunrise Dental Clinic</h1>
+  <p>Appointment &amp; Patient Management System</p>
+</header>
+
+<!-- ===== Login section ===== -->
+<section id="login-section">
+  <h2>Staff Login</h2>
+  <form id="login-form">
+    <label>Username <input type="text" id="username" required></label>
+    <label>Password <input type="password" id="password" required></label>
+    <button type="submit">Login</button>
+  </form>
+  <p id="login-message"></p>
+</section>
+
+<!-- ===== Main app (hidden until login succeeds) ===== -->
+<section id="app-section" class="hidden">
+
+  <nav>
+    <button data-tab="register">Register Appointment</button>
+    <button data-tab="search">Display Appointment</button>
+    <button data-tab="cancel">Cancel Appointment</button>
+    <button data-tab="billing">Calculate &amp; Print Bill</button>
+    <button data-tab="displayBills">Display Bills</button>
+    <button data-tab="manage">Manage Dentists &amp; Treatments</button>
+    <button data-tab="help">Help</button>
+    <button id="logout-btn" type="button">Logout</button>
+  </nav>
+
+  <div id="register" class="tab">
+    <h2>Register New Appointment</h2>
+    <form id="register-form">
+      <label>Patient Name <input type="text" name="name" required></label>
+      <label>Address <input type="text" name="address" required></label>
+      <label>Contact Number <input type="text" name="contact" required></label>
+      <label>Dentist
+        <select name="dentistId" id="register-dentist" required>
+          <option value="" disabled selected>Loading dentists…</option>
+        </select>
+      </label>
+      <label>Treatment Type
+        <select name="treatment" id="register-treatment" required>
+          <option value="" disabled selected>Loading treatment types…</option>
+        </select>
+      </label>
+      <label>Appointment Date <input type="date" name="apptDate" required></label>
+      <label>Appointment Time <input type="time" name="apptTime" required></label>
+      <button type="submit">Register</button>
+    </form>
+    <p id="register-message"></p>
+  </div>
+
+  <div id="search" class="tab hidden">
+    <h2>Display Appointment Details</h2>
+
+    <form id="search-form">
+      <label>Appointment Number <input type="text" name="apptNumber" id="search-apptNumber"></label>
+      <button type="submit">Search</button>
+    </form>
+    <pre id="search-result"></pre>
+
+    <table id="appointments-table" class="hidden">
+      <thead>
+      <tr>
+        <th>Appt #</th>
+        <th>Patient</th>
+        <th>Dentist</th>
+        <th>Treatment</th>
+        <th>Date</th>
+        <th>Time</th>
+        <th>Status</th>
+      </tr>
+      </thead>
+      <tbody id="appointments-table-body"></tbody>
+    </table>
+  </div>
+
+  <div id="cancel" class="tab hidden">
+    <h2>Cancel Appointment</h2>
+
+    <table id="cancel-table" class="hidden">
+      <thead>
+      <tr>
+        <th>Appt #</th>
+        <th>Patient</th>
+        <th>Dentist</th>
+        <th>Treatment</th>
+        <th>Date</th>
+        <th>Time</th>
+        <th>Status</th>
+        <th></th>
+      </tr>
+      </thead>
+      <tbody id="cancel-table-body"></tbody>
+    </table>
+    <p id="cancel-message"></p>
+  </div>
+
+  <div id="billing" class="tab hidden">
+    <form id="billing-form">
+      <label>Appointment Number
+        <select name="apptNumber" id="billing-apptNumber" required>
+          <option value="" disabled selected>Select an appointment</option>
+        </select>
+      </label>
+      <label>Consultation Fee <input type="number" name="consultFee" step="0.01" min="0" required></label>
+      <button type="submit">Generate Bill</button>
+    </form>
+
+    <div id="billing-receipt" class="invoice hidden">
+
+      <div class="invoice-top">
+        <div class="clinic-block">
+          <h3>Sunrise Dental Clinic</h3>
+          <p>No. 45, Lotus Road, Colombo 05</p>
+          <p>Tel: 011-234-5678 &nbsp;|&nbsp; info@sunrisedental.lk</p>
+        </div>
+        <div class="invoice-id-block">
+          <h2>PATIENT BILL</h2>
+          <p>Bill No: <span id="r-billId"></span></p>
+          <p>Appointment #: <span id="r-apptNumber"></span></p>
+        </div>
+      </div>
+
+      <div class="invoice-divider"></div>
+
+      <div class="invoice-details">
+        <div>
+          <span class="label">Patient</span>
+          <span id="r-patient"></span>
+        </div>
+        <div>
+          <span class="label">Dentist</span>
+          <span id="r-dentist"></span>
+        </div>
+        <div>
+          <span class="label">Date / Time</span>
+          <span id="r-datetime"></span>
+        </div>
+      </div>
+
+      <table class="invoice-table">
+        <thead>
+        <tr>
+          <th>Description</th>
+          <th>Amount</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+          <td>Consultation Fee</td>
+          <td id="r-consultFee"></td>
+        </tr>
+        <tr>
+          <td>Treatment&nbsp;&mdash;&nbsp;<span id="r-treatment"></span></td>
+          <td id="r-treatmentCost"></td>
+        </tr>
+        <tr>
+          <td>Hospital Charge</td>
+          <td id="r-hospitalCharge"></td>
+        </tr>
+        <tr>
+          <td id="r-taxLabel">Tax</td>
+          <td id="r-tax"></td>
+        </tr>
+        </tbody>
+        <tfoot>
+        <tr class="invoice-total-row">
+          <td>Total Payable</td>
+          <td id="r-total"></td>
+        </tr>
+        </tfoot>
+      </table>
+
+      <div class="invoice-bottom">
+        <div class="invoice-signature">
+          <div class="sign-line"></div>
+          <p>Cashier / Authorized Signature</p>
+        </div>
+        <p class="invoice-footer">Thank you for visiting Sunrise Dental Clinic.<br>Please retain this bill for your records.</p>
+      </div>
+    </div>
+
+    <p id="billing-message"></p>
+    <div id="billing-actions" class="hidden">
+      <button type="button" id="save-billing-btn">Save Bill</button>
+      <button type="button" id="print-billing-btn" class="hidden">Print Bill</button>
+    </div>
+    <p id="save-billing-message"></p>
+  </div>
+
+  <div id="displayBills" class="tab hidden">
+    <h2>Display Bills</h2>
+    <p>Every bill that has been saved to the database.</p>
+
+    <table id="bills-table">
+      <thead>
+      <tr>
+        <th>Bill No</th>
+        <th>Appt #</th>
+        <th>Patient</th>
+        <th>Treatment</th>
+        <th>Date</th>
+        <th>Total</th>
+      </tr>
+      </thead>
+      <tbody id="bills-table-body"></tbody>
+    </table>
+  </div>
+
+  <div id="manage" class="tab hidden">
+    <h2>Manage Dentists &amp; Treatments</h2>
+
+    <h3>Add Dentist</h3>
+    <form id="add-dentist-form">
+      <label>Name <input type="text" name="name" required></label>
+      <label>Specialty <input type="text" name="specialty"></label>
+      <button type="submit">Add Dentist</button>
+    </form>
+    <p id="add-dentist-message"></p>
+
+    <table id="dentists-table">
+      <thead>
+      <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Specialty</th>
+      </tr>
+      </thead>
+      <tbody id="dentists-table-body"></tbody>
+    </table>
+
+    <h3>Add Treatment Type</h3>
+    <form id="add-treatment-form">
+      <label>Name <input type="text" name="name" required></label>
+      <label>Price (Rs.) <input type="number" name="price" step="0.01" min="0" required></label>
+      <button type="submit">Add Treatment Type</button>
+    </form>
+    <p id="add-treatment-message"></p>
+
+    <table id="treatments-table">
+      <thead>
+      <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Price</th>
+      </tr>
+      </thead>
+      <tbody id="treatments-table-body"></tbody>
+    </table>
+  </div>
+
+  <div id="help" class="tab hidden">
+    <h2>Help</h2>
+    <!-- TODO: write your own step-by-step staff instructions here -->
+    <ol>
+      <li>Log in with your staff username and password.</li>
+      <li>Use "Register Appointment" to add a new patient visit.</li>
+      <li>Use "Display Appointment" to look up an existing appointment by its number.</li>
+      <li>Use "Cancel Appointment" to cancel a booking.</li>
+      <li>Use "Calculate & Print Bill" once treatment is complete to preview a bill, then click "Save Bill" to record it (and "Print Bill" to print it).</li>
+      <li>Use "Display Bills" to see every bill that has been saved.</li>
+      <li>Use "Manage Dentists & Treatments" to add new dentists or treatment types — they'll immediately show up in the Register Appointment dropdowns.</li>
+    </ol>
+  </div>
+
+</section>
+
+<script src="js/app.js"></script>
+</body>
+</html>

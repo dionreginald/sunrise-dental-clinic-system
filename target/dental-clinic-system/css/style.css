@@ -1,0 +1,267 @@
+/* TODO: this is deliberately plain - restyle it to make it your own for
+   the "user friendly interfaces" marks in the brief. */
+
+* { box-sizing: border-box; }
+
+body {
+  font-family: Arial, Helvetica, sans-serif;
+  margin: 0;
+  background: #f4f6f8;
+  color: #222;
+}
+
+header {
+  background: #0b3d59;
+  color: white;
+  padding: 1.2rem 2rem;
+}
+
+header h1 { margin: 0; font-size: 1.5rem; }
+header p { margin: 0.2rem 0 0; opacity: 0.85; }
+
+#login-section, .tab {
+  max-width: 480px;
+  margin: 2rem auto;
+  background: white;
+  padding: 1.5rem 2rem;
+  border-radius: 8px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+}
+
+#search.tab, #cancel.tab {
+  max-width: 800px;
+}
+
+nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: center;
+  margin-top: 1.5rem;
+}
+
+nav button {
+  background: #0b3d59;
+  color: white;
+  border: none;
+  padding: 0.6rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+nav button:hover { background: #145d84; }
+
+form label {
+  display: block;
+  margin-bottom: 0.9rem;
+  font-size: 0.9rem;
+}
+
+form input, form select {
+  display: block;
+  width: 100%;
+  padding: 0.5rem;
+  margin-top: 0.25rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+button[type="submit"], button[type="button"] {
+  background: #0b3d59;
+  color: white;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-right: 0.5rem;
+}
+
+button[type="submit"]:hover, button[type="button"]:hover { background: #145d84; }
+
+.hidden { display: none; }
+
+pre {
+  background: #f0f0f0;
+  padding: 1rem;
+  border-radius: 4px;
+  white-space: pre-wrap;
+}
+
+/* ----- Bill / Invoice ----- */
+.invoice {
+  max-width: 650px;
+  margin: 1.5rem auto 0;
+  padding: 1.5rem 1.8rem;
+  background: #ffffff;
+  border: 1px solid #bbb;
+  color: #222;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 0.9rem;
+}
+
+.invoice-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.clinic-block h3 {
+  margin: 0 0 0.2rem;
+  font-size: 1.15rem;
+  color: #0b3d59;
+}
+
+.clinic-block p {
+  margin: 0.1rem 0;
+  font-size: 0.75rem;
+  color: #555;
+}
+
+.invoice-id-block {
+  text-align: right;
+}
+
+.invoice-id-block h2 {
+  margin: 0 0 0.25rem;
+  font-size: 1.1rem;
+  letter-spacing: 0.05em;
+  color: #0b3d59;
+}
+
+.invoice-id-block p {
+  margin: 0.1rem 0;
+  font-size: 0.8rem;
+}
+
+.invoice-divider {
+  border-top: 2px solid #0b3d59;
+  margin: 0.9rem 0;
+}
+
+.invoice-details {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1.1rem;
+}
+
+.invoice-details > div {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.invoice-details .label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #777;
+}
+
+.invoice-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1rem;
+}
+
+.invoice-table th, .invoice-table td {
+  border: 1px solid #ccc;
+  padding: 0.5rem 0.6rem;
+  text-align: left;
+}
+
+.invoice-table th {
+  background: #0b3d59;
+  color: white;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.invoice-table td:last-child, .invoice-table th:last-child {
+  text-align: right;
+  width: 130px;
+}
+
+.invoice-total-row td {
+  font-weight: bold;
+  font-size: 1rem;
+  background: #f4f6f8;
+  border-top: 2px solid #0b3d59;
+}
+
+.invoice-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.invoice-signature {
+  font-size: 0.75rem;
+  color: #555;
+  text-align: center;
+}
+
+.sign-line {
+  width: 160px;
+  border-top: 1px solid #333;
+  margin-bottom: 0.25rem;
+}
+
+.invoice-footer {
+  font-size: 0.75rem;
+  color: #777;
+  text-align: right;
+  margin: 0;
+}
+
+@media print {
+  header, nav, #login-section, form, #billing-message, #print-billing-btn {
+    display: none !important;
+  }
+  body {
+    background: white;
+  }
+  .invoice {
+    box-shadow: none;
+    border: none;
+    margin: 0 auto;
+    max-width: 100%;
+  }
+}
+
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+
+th, td {
+  text-align: left;
+  padding: 0.5rem 0.6rem;
+  border-bottom: 1px solid #e0e0e0;
+  font-size: 0.9rem;
+}
+
+th {
+  background: #f0f4f7;
+}
+
+.cancel-row-btn {
+  background: #b33a3a;
+  color: white;
+  border: none;
+  padding: 0.3rem 0.7rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.cancel-row-btn:hover { background: #8f2e2e; }
