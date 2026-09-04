@@ -118,6 +118,9 @@ document.querySelectorAll("nav button[data-tab]").forEach((btn) => {
     if (btn.dataset.tab === "billing") {
       loadApptNumberOptions("billing-apptNumber");
     }
+    if (btn.dataset.tab === "displayBills") {
+      loadBillsTable();
+    }
     if (btn.dataset.tab === "manage") {
       loadDentistsTable();
       loadTreatmentsTable();
@@ -275,6 +278,12 @@ document.getElementById("cancel-table-body").addEventListener("click", async (e)
 });
 
 // ----- Billing -----
+// "Generate Bill" only PREVIEWS the calculation (GET /api/bill) — nothing is
+// saved to the database yet. The appt number + consult fee used for the
+// preview are kept so the separate "Save Bill" button can record exactly
+// what's on screen.
+let pendingBill = null;
+
 document.getElementById("billing-form").addEventListener("submit", async (e) => {
   e.preventDefault();
   const form = new URLSearchParams(new FormData(e.target));
@@ -283,16 +292,20 @@ document.getElementById("billing-form").addEventListener("submit", async (e) => 
   const data = await res.json();
   const receiptEl = document.getElementById("billing-receipt");
   const messageEl = document.getElementById("billing-message");
+  const actionsEl = document.getElementById("billing-actions");
   const printBtn = document.getElementById("print-billing-btn");
+  const saveMessageEl = document.getElementById("save-billing-message");
 
-  if (data.billId) {
+  saveMessageEl.textContent = "";
+
+  if (data.appointment) {
     const appt = data.appointment || {};
     const patientName = appt.patient ? appt.patient.name : "N/A";
     const dentistName = appt.dentist ? appt.dentist.name : "N/A";
     const money = (n) => `Rs. ${Number(n).toFixed(2)}`;
     const tax = data.totalAmount - data.consultFee - data.treatmentCost - data.hospitalCharge;
 
-    document.getElementById("r-billId").textContent = data.billId;
+    document.getElementById("r-billId").textContent = "Preview (not yet saved)";
     document.getElementById("r-apptNumber").textContent = appt.apptNumber || form.get("apptNumber");
     document.getElementById("r-patient").textContent = patientName;
     document.getElementById("r-dentist").textContent = dentistName;
@@ -306,19 +319,78 @@ document.getElementById("billing-form").addEventListener("submit", async (e) => 
     document.getElementById("r-tax").textContent = money(tax);
     document.getElementById("r-total").textContent = money(data.totalAmount);
 
+    // Remember what to (re)save, and mark it not-yet-saved.
+    pendingBill = { apptNumber: form.get("apptNumber"), consultFee: form.get("consultFee") };
+
     receiptEl.classList.remove("hidden");
     messageEl.textContent = "";
-    printBtn.classList.remove("hidden");
+    actionsEl.classList.remove("hidden");
+    printBtn.classList.add("hidden"); // only enable printing once it's actually saved
   } else {
+    pendingBill = null;
     receiptEl.classList.add("hidden");
-    messageEl.textContent = data.message || "Could not generate bill";
-    printBtn.classList.add("hidden");
+    messageEl.textContent = data.message || "Could not calculate bill";
+    actionsEl.classList.add("hidden");
+  }
+});
+
+// "Save Bill" is the explicit, separate step that actually records the
+// previewed bill (POST /api/bill), rather than every calculation being
+// saved automatically.
+document.getElementById("save-billing-btn").addEventListener("click", async () => {
+  const saveMessageEl = document.getElementById("save-billing-message");
+  const printBtn = document.getElementById("print-billing-btn");
+
+  if (!pendingBill) {
+    saveMessageEl.textContent = "Generate a bill first.";
+    return;
+  }
+
+  const body = new URLSearchParams(pendingBill);
+  const res = await fetch(`${API_BASE}/bill`, { method: "POST", body });
+  const data = await res.json();
+
+  if (data.billId) {
+    document.getElementById("r-billId").textContent = data.billId;
+    saveMessageEl.textContent = `Saved as ${data.billId}.`;
+    printBtn.classList.remove("hidden");
+    pendingBill = null; // saved — a fresh preview is required before saving again
+  } else {
+    saveMessageEl.textContent = data.message || "Could not save bill";
   }
 });
 
 document.getElementById("print-billing-btn").addEventListener("click", () => {
   window.print();
 });
+
+// Fetches every recorded bill (GET /api/bill with no consultFee param puts
+// BillServlet into "list" mode) and renders it into the Display Bills table.
+async function loadBillsTable() {
+  const tbody = document.getElementById("bills-table-body");
+
+  try {
+    const res = await fetch(`${API_BASE}/bill`);
+    const bills = await res.json();
+
+    tbody.innerHTML = "";
+    bills.forEach((bill) => {
+      const appt = bill.appointment || {};
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${bill.billId}</td>
+        <td>${appt.apptNumber || ""}</td>
+        <td>${appt.patient ? appt.patient.name : ""}</td>
+        <td>${appt.treatment || ""}</td>
+        <td>${appt.apptDate || ""} ${appt.apptTime || ""}</td>
+        <td>Rs. ${Number(bill.totalAmount).toFixed(2)}</td>
+      `;
+      tbody.appendChild(row);
+    });
+  } catch (err) {
+    tbody.innerHTML = "<tr><td colspan=\"6\">Could not load recorded bills.</td></tr>";
+  }
+}
 
 // ----- Manage: Add Dentist -----
 document.getElementById("add-dentist-form").addEventListener("submit", async (e) => {

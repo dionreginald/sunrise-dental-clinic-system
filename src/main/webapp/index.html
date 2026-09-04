@@ -31,6 +31,7 @@
     <button data-tab="search">Display Appointment</button>
     <button data-tab="cancel">Cancel Appointment</button>
     <button data-tab="billing">Calculate &amp; Print Bill</button>
+    <button data-tab="displayBills">Display Bills</button>
     <button data-tab="manage">Manage Dentists &amp; Treatments</button>
     <button data-tab="help">Help</button>
     <button id="logout-btn" type="button">Logout</button>
@@ -106,7 +107,6 @@
   </div>
 
   <div id="billing" class="tab hidden">
-    <h2>Calculate and Print Bill</h2>
     <form id="billing-form">
       <label>Appointment Number
         <select name="apptNumber" id="billing-apptNumber" required>
@@ -117,31 +117,105 @@
       <button type="submit">Generate Bill</button>
     </form>
 
-    <div id="billing-receipt" class="receipt hidden">
-      <div class="receipt-header">
-        <h3>Sunrise Dental Clinic</h3>
-        <p>Appointment &amp; Patient Management System</p>
+    <div id="billing-receipt" class="invoice hidden">
+
+      <div class="invoice-top">
+        <div class="clinic-block">
+          <h3>Sunrise Dental Clinic</h3>
+          <p>No. 45, Lotus Road, Colombo 05</p>
+          <p>Tel: 011-234-5678 &nbsp;|&nbsp; info@sunrisedental.lk</p>
+        </div>
+        <div class="invoice-id-block">
+          <h2>PATIENT BILL</h2>
+          <p>Bill No: <span id="r-billId"></span></p>
+          <p>Appointment #: <span id="r-apptNumber"></span></p>
+        </div>
       </div>
-      <div class="receipt-divider"></div>
-      <div class="receipt-row"><span>Bill ID</span><span id="r-billId"></span></div>
-      <div class="receipt-row"><span>Appointment #</span><span id="r-apptNumber"></span></div>
-      <div class="receipt-row"><span>Patient</span><span id="r-patient"></span></div>
-      <div class="receipt-row"><span>Dentist</span><span id="r-dentist"></span></div>
-      <div class="receipt-row"><span>Treatment</span><span id="r-treatment"></span></div>
-      <div class="receipt-row"><span>Date / Time</span><span id="r-datetime"></span></div>
-      <div class="receipt-divider dashed"></div>
-      <div class="receipt-row"><span>Consultation Fee</span><span id="r-consultFee"></span></div>
-      <div class="receipt-row"><span>Treatment Cost</span><span id="r-treatmentCost"></span></div>
-      <div class="receipt-row"><span>Hospital Charge</span><span id="r-hospitalCharge"></span></div>
-      <div class="receipt-row"><span id="r-taxLabel">Tax</span><span id="r-tax"></span></div>
-      <div class="receipt-divider dashed"></div>
-      <div class="receipt-row receipt-total"><span>Total</span><span id="r-total"></span></div>
-      <div class="receipt-divider"></div>
-      <p class="receipt-footer">Thank you — please retain this receipt</p>
+
+      <div class="invoice-divider"></div>
+
+      <div class="invoice-details">
+        <div>
+          <span class="label">Patient</span>
+          <span id="r-patient"></span>
+        </div>
+        <div>
+          <span class="label">Dentist</span>
+          <span id="r-dentist"></span>
+        </div>
+        <div>
+          <span class="label">Date / Time</span>
+          <span id="r-datetime"></span>
+        </div>
+      </div>
+
+      <table class="invoice-table">
+        <thead>
+        <tr>
+          <th>Description</th>
+          <th>Amount</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+          <td>Consultation Fee</td>
+          <td id="r-consultFee"></td>
+        </tr>
+        <tr>
+          <td>Treatment&nbsp;&mdash;&nbsp;<span id="r-treatment"></span></td>
+          <td id="r-treatmentCost"></td>
+        </tr>
+        <tr>
+          <td>Hospital Charge</td>
+          <td id="r-hospitalCharge"></td>
+        </tr>
+        <tr>
+          <td id="r-taxLabel">Tax</td>
+          <td id="r-tax"></td>
+        </tr>
+        </tbody>
+        <tfoot>
+        <tr class="invoice-total-row">
+          <td>Total Payable</td>
+          <td id="r-total"></td>
+        </tr>
+        </tfoot>
+      </table>
+
+      <div class="invoice-bottom">
+        <div class="invoice-signature">
+          <div class="sign-line"></div>
+          <p>Cashier / Authorized Signature</p>
+        </div>
+        <p class="invoice-footer">Thank you for visiting Sunrise Dental Clinic.<br>Please retain this bill for your records.</p>
+      </div>
     </div>
 
     <p id="billing-message"></p>
-    <button type="button" id="print-billing-btn" class="hidden">Print Bill</button>
+    <div id="billing-actions" class="hidden">
+      <button type="button" id="save-billing-btn">Save Bill</button>
+      <button type="button" id="print-billing-btn" class="hidden">Print Bill</button>
+    </div>
+    <p id="save-billing-message"></p>
+  </div>
+
+  <div id="displayBills" class="tab hidden">
+    <h2>Display Bills</h2>
+    <p>Every bill that has been saved to the database.</p>
+
+    <table id="bills-table">
+      <thead>
+      <tr>
+        <th>Bill No</th>
+        <th>Appt #</th>
+        <th>Patient</th>
+        <th>Treatment</th>
+        <th>Date</th>
+        <th>Total</th>
+      </tr>
+      </thead>
+      <tbody id="bills-table-body"></tbody>
+    </table>
   </div>
 
   <div id="manage" class="tab hidden">
@@ -194,7 +268,8 @@
       <li>Use "Register Appointment" to add a new patient visit.</li>
       <li>Use "Display Appointment" to look up an existing appointment by its number.</li>
       <li>Use "Cancel Appointment" to cancel a booking.</li>
-      <li>Use "Calculate & Print Bill" once treatment is complete.</li>
+      <li>Use "Calculate & Print Bill" once treatment is complete to preview a bill, then click "Save Bill" to record it (and "Print Bill" to print it).</li>
+      <li>Use "Display Bills" to see every bill that has been saved.</li>
       <li>Use "Manage Dentists & Treatments" to add new dentists or treatment types — they'll immediately show up in the Register Appointment dropdowns.</li>
     </ol>
   </div>
