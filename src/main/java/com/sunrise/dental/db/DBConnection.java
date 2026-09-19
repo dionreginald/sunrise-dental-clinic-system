@@ -4,21 +4,6 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
-/**
- * Singleton Design Pattern.
- *
- * Only one instance of this class ever exists. Every DAO asks this class
- * for a connection instead of creating its own, which keeps DB credentials
- * and connection setup in exactly one place.
- *
- * Credentials are read from environment variables (DB_URL, DB_USER,
- * DB_PASSWORD) rather than being hardcoded here. Real DB passwords must
- * never be committed to source control — Task D of this assignment
- * requires a *public* GitHub repo, so anything hardcoded here would be
- * exposed to anyone who finds the repo. Set the three environment
- * variables before running (see README for how), or fall back to the
- * defaults below for local development only.
- */
 public class DBConnection {
 
     private static final String DEFAULT_URL =
